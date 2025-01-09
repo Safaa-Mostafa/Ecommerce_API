@@ -20,6 +20,7 @@ namespace Application
 
             // تسجيل الخدمات الأخرى
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IProductService, ProductService>();
 
         }
 

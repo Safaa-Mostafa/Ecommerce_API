@@ -1,9 +1,9 @@
 ﻿using Application.DTOs.Category;
+using Application.Exceptions;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Modules.Categories.Queries
 {
@@ -13,12 +13,10 @@ namespace Application.Modules.Categories.Queries
     {
         private readonly IGenericRepository<Category> _categoryRepo;
         private readonly IMapper _mapper;
-        private readonly ILogger<GetAllCategoriesQueryHandler> _logger;
-        public GetAllCategoriesQueryHandler(IGenericRepository<Category> categoryRepo, IMapper mapper, ILogger<GetAllCategoriesQueryHandler> logger)
+        public GetAllCategoriesQueryHandler(IGenericRepository<Category> categoryRepo, IMapper mapper)
         {
-            _categoryRepo = categoryRepo ?? throw new ArgumentNullException(nameof(categoryRepo));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _categoryRepo = categoryRepo;
+            _mapper = mapper;
 
         }
 
@@ -29,8 +27,7 @@ namespace Application.Modules.Categories.Queries
 
             if (categories == null || !categories.Any())
             {
-                _logger.LogWarning("No categories found in the database.");
-                return new List<ReadCategory>();
+                throw new CategoryListotFoundException("No categories found in the database.");
             }
 
             var categoriesDto = _mapper.Map<List<ReadCategory>>(categories);

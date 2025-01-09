@@ -7,7 +7,10 @@ namespace Domain.Entities
         public string Name { get; private set; }
         public string? Description { get; private set; }
         public ICollection<Product> Products { get; set; }
-
+        public Category()
+        {
+            
+        }
         public Category(string name, string description, string Id)
         {
             EnsureValidCategory(name, description, Id);
@@ -18,7 +21,6 @@ namespace Domain.Entities
         {
             ValidateName(name);
             ValidateDescription(description);
-            ValidateId(Id);
         }
         private void ValidateName(string name)
         {

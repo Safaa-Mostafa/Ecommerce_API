@@ -13,8 +13,6 @@ namespace Domain.Entities
         public ICollection<ProductOrder> OrderProducts { get; set; } = new List<ProductOrder>();
         public Order(string Id, string userId,string DiscountCode)
         {
-            ValidateId(Id);
-            ValidateId(userId);
             ValidateDiscountCode(DiscountCode);
             UserId = userId;
             OrderDate = DateTime.UtcNow;

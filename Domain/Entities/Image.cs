@@ -11,7 +11,6 @@ namespace Domain.Entities
         {
             EnsureValidUrl(url); 
             EnsureValidProductId(productId);
-            ValidateId(Id);
             Url = url;
             ProductId = productId;
         }

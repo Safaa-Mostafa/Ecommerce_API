@@ -1,135 +1,98 @@
-﻿using System.Diagnostics;
-using System.Xml.Linq;
-using Domain.Entities.common;
-using static System.Net.Mime.MediaTypeNames;
+﻿using Domain.Entities.common;
+using Domain.Entities.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Domain.Entities
 {
     public class Product : BaseEntity
     {
         public string? Description { get; private set; }
-        public string Name { get; private set; } 
+        public string Name { get; private set; }
         public decimal Price { get; private set; }
         public int StockQuantity { get; private set; }
         public bool PrdStatus { get; private set; }
 
-        public virtual ICollection<Image> ImageUrls { get; private set; }
-        public Category Category { get; private set; }
         public string CategoryId { get; private set; }
+        public Category Category { get; private set; }
+
+        public virtual ICollection<Image> ImageUrls { get; private set; }
         public virtual ICollection<Discount> Discounts { get; private set; }
-        public virtual ICollection<ProductOrder> OrderProducts { get; set; }
+        public virtual ICollection<ProductOrder> OrderProducts { get; private set; }
         public virtual ICollection<Review> Reviews { get; private set; }
 
-        public Product(string description,string name, decimal price, int stock, ICollection<Image> images, string categoryId, Discount discounts)
+        public Product()
         {
-            ValidateName(name);
-            ValidatePrice(price);
-            ValidateStock(stock);
-            ValidateImages(images);
-            ValidateCategory(categoryId);
-            ValidateDiscount(discounts);
-            ValidateDescription(description);
-            Name = name;
+            ImageUrls = new HashSet<Image>();
+            Discounts = new HashSet<Discount>();
+            Reviews = new HashSet<Review>();
+        }
+
+        public Product(string description, string name, decimal price, int stock, string categoryId) : this()
+        {
+            Validate();
             Description = description;
+            Name = name;
             Price = price;
             StockQuantity = stock;
-            ImageUrls = images;
             CategoryId = categoryId;
-            Discounts.Add(discounts);
         }
 
-        private void ValidateName(string name)
+        private void Validate()
         {
-            ArgumentNullException.ThrowIfNull("name");
-            if (string.IsNullOrEmpty(name))
-                throw new ArgumentNullException("Product name cannot be empty.");
+            if (string.IsNullOrWhiteSpace(Name))
+                throw new ProductValidationException("Product name cannot be null or empty.", "NAME_NULL_OR_EMPTY");
+            if (Name.Length < 3 || Name.Length > 100)
+                throw new ProductValidationException("Product name must be between 3 and 100 characters.", "NAME_LENGTH_INVALID");
+            if (string.IsNullOrWhiteSpace(Description))
+                throw new ProductValidationException("Product description cannot be null or empty.", "DESCRIPTION_NULL_OR_EMPTY");
+            if (Description.Length > 500)
+                throw new ProductValidationException("Product description cannot exceed 500 characters.", "DESCRIPTION_LENGTH_EXCEEDED");
+            if (Price <= 0)
+                throw new ProductValidationException("Price must be greater than zero.", "PRICE_INVALID");
+            if (Price > 1_000_000)
+                throw new ProductValidationException("Price cannot exceed 1,000,000.", "PRICE_TOO_HIGH");
+
+            if (StockQuantity < 0)
+                throw new ProductValidationException("Stock quantity cannot be negative.", "STOCK_NEGATIVE");
+            if (StockQuantity > 10_000)
+                throw new ProductValidationException("Stock quantity cannot exceed 10,000.", "STOCK_TOO_HIGH");
+
+            if (string.IsNullOrWhiteSpace(CategoryId))
+                throw new ProductValidationException("Category ID cannot be null or empty.", "CATEGORY_ID_NULL_OR_EMPTY");
+            if (CategoryId.Length != 36)
+                throw new ProductValidationException("Category ID must be a valid GUID.", "CATEGORY_ID_INVALID");
         }
-        private void ValidateDescription(string description)
-        {
-            if (string.IsNullOrEmpty(description))
-                throw new ArgumentNullException("Product description cannot be empty.");
-        }
-        private void ValidatePrice(decimal price)
-        {
-            if (price <= 0)
-                throw new ArgumentException("Price must be greater than zero.");
-        }
-        private void ValidateStock(int stock)
-        {
-            if (stock < 0)
-                throw new ArgumentException("Stock cannot be negative.");
-        }
-        private void ValidateImages(ICollection<Image> images)
-        {
-            if (images.Count == 0 || images is null) throw new ArgumentException("At least one image is required.");
-        }
-        private void ValidateCategory(string categoryId)
-        {
-            if (string.IsNullOrWhiteSpace(categoryId)) throw new ArgumentNullException("CategoryId cannot be null or empty.");
-        }
-        private void ValidateDiscount(Discount discounts)
-        {
-            if (discounts is null) throw new ArgumentException("Discount cannot be null");
-        }
-        public decimal CalculateAverageRating()
-        {
-            if (Reviews.Count == 0)
-                return 1;
-            decimal averageRating = Reviews.Average(r => r.Rating);
-            return Math.Min(averageRating, 5);
-        }
+
         public void ReplenishStock(int quantity)
         {
-            if (quantity < 0) throw new ArgumentException("Replenish quantity must be positive.");
+            if (quantity <= 0)
+                throw new ProductValidationException("Replenish quantity must be greater than zero.", "REPLENISH_QUANTITY_INVALID");
+            if (StockQuantity + quantity > 10_000)
+                throw new ProductValidationException("Stock quantity cannot exceed 10,000 after replenishment.", "STOCK_TOO_HIGH_AFTER_REPLENISHMENT");
+
             StockQuantity += quantity;
         }
-        public void ReduceInStock(int quantity)
+
+        public void ReduceStock(int quantity)
         {
-            if (quantity < 0) throw new ArgumentException("Quantity to reduce must be positive.");
-            if (StockQuantity < quantity) throw new InvalidOperationException("Not enough stock available.");
+            if (quantity <= 0)
+                throw new ProductValidationException("Quantity to reduce must be greater than zero.", "REDUCE_QUANTITY_INVALID");
+            if (StockQuantity < quantity)
+                throw new ProductValidationException("Not enough stock available.", "STOCK_INSUFFICIENT");
             StockQuantity -= quantity;
         }
-        public void ApplyDiscount(Discount discount)
-        {
-            ValidateDiscount(discount);
-            Discounts.Add(discount);
-            RecalculatePrice();
-        }
-        public void RemoveDiscount(Discount discount)
-        {
-            ValidateDiscount(discount);
-            if (!Discounts.Contains(discount)) throw new ArgumentException("Discount not found in the product's discounts.");
-            Discounts.Remove(discount);
-        }
-        public void RecalculatePrice()
-        {
-            decimal totalDiscount = Discounts.Sum(d => d.Percentage);
-            Price = Math.Max(Price - (Price * (totalDiscount / 100)), 0);
-        }
-        public void RemoveImage(Image image)
-        {
-            if (image == null) throw new ArgumentNullException(nameof(image), "Image cannot be null.");
-            if (ImageUrls.Contains(image)) ImageUrls.Remove(image);
-        }
-        public void AddImage(Image image)
-        {
-            if (image == null) throw new ArgumentNullException(nameof(image), "Image cannot be null.");
-            ImageUrls.Add(image);
-        }
-        public void AddReview(Review review)
-        {
-            if (review == null)
-                throw new ArgumentNullException(nameof(review));
 
-            if (review.ProductId != Id)
-                throw new ArgumentException("The review does not belong to this product.");
+        public decimal GetDiscountedPrice()
+        {
+            decimal totalDiscount = Discounts.Sum(d => d.GetDiscountPercentage());
+            return Math.Max(Price - (Price * (totalDiscount / 100)), 0);
+        }
 
-            if (Reviews.Any(r => r.CustomerId == review.CustomerId))
-                throw new InvalidOperationException("A customer can only leave one review per product.");
-
-            Reviews.Add(review);
-            RecalculatePrice();
+        public decimal CalculateAverageRating()
+        {
+            return Reviews.Any() ? Reviews.Average(r => r.Rating) : 0;
         }
     }
 }
-

@@ -1,8 +1,6 @@
 ﻿using Application.DTOs.Product;
-using Application.Modules.Products.Commands;
+using Application.Interfaces;
 using Application.Modules.Products.Queries;
-using AutoMapper;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -11,28 +9,24 @@ namespace WebApi.Controllers
     [ApiController]
     public class ProductController : BaseController
     {
-        private readonly IMediator _mediator;
-        private readonly IMapper _mapper;
-
-        public ProductController(IMediator mediator, IMapper mapper)
+        private readonly IProductService _productService;
+        public ProductController(IProductService productService)
         {
-            _mediator = mediator;
-            _mapper = mapper;
+            _productService = productService;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] AddProduct addProductDto)
         {
-            var command = _mapper.Map<CreateProductCommand>(addProductDto);
-            var productId = await _mediator.Send(command);
-            return HandleDataResponse(productId);
+            var response = await _productService.CreateProduct(addProductDto);
+            return ApiResponse(true, response, "product created successfully");
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetProductById([FromRoute] GetProductByIdQuery query)
+        public async Task<IActionResult> GetProductById([FromRoute] GetProductByIdQuery query)
         {
-            var product = _mediator.Send(query);
-            return HandleDataResponse(product);
+            var response = await _productService.GetProductById(query);
+            return ApiResponse(true, response, "fetched product successfully");
         }
     }
 }

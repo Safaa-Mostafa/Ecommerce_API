@@ -14,10 +14,6 @@ namespace Domain.Entities.common
         {
             Id = Guid.NewGuid().ToString();
         }
-        protected void ValidateId(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Id cannot be empty.");
-        }
+     
     }
 }

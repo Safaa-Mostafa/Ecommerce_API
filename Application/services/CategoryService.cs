@@ -11,15 +11,19 @@ namespace Application.services
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
-        public CategoryService(IMediator mediator)
+        public CategoryService(IMediator mediator, IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
         }
         public async Task<IEnumerable<ReadCategory>> GetAllCategoriesAsync(GetAllCategoriesQuery query)
         {
             return await _mediator.Send(query);
         }
-
+        public async Task<IEnumerable<ReadCategory>> GetAllCategoriesAsyncWithProductsAsync(GetAllCategoriesWithProducts query)
+        {
+            return await _mediator.Send(query);
+        }
         public async Task<string> AddCategoryAsync(AddCategory addCategoryDto)
         {
             var createProductCommand = _mapper.Map<CreateCategoryCommand>(addCategoryDto);

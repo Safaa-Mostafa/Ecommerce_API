@@ -1,7 +1,6 @@
 ﻿using Application.DTOs.Category;
 using Application.Interfaces;
 using Application.Modules.Categories.Queries;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -11,29 +10,32 @@ namespace WebApi.Controllers
     public class CategoryController : BaseController
     {
         private readonly ICategoryService _categoryService;
-        private readonly IMapper _mapper;
 
-        public CategoryController(IMapper mapper, ICategoryService categoryService)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _mapper = mapper;
+
         }
+
         [HttpGet]
-        public IActionResult GetAll(GetAllCategoriesQuery query)
+        public async Task<IActionResult> GetAll([FromQuery] GetAllCategoriesQuery query)
         {
-            var categories = _categoryService.GetAllCategoriesAsync(query);
-            return HandleDataResponse(categories);
+            var response = await _categoryService.GetAllCategoriesAsync(query);
+            return ApiResponse(true, response, "All categories fetched successfully");
         }
+
         [HttpGet("with-products")]
-        public IActionResult GetALLCategoriesWithProducts(GetAllCategoriesWithProducts query)
+        public async Task<IActionResult> GetAllCategoriesWithProducts([FromQuery] GetAllCategoriesWithProducts query)
         {
-            return HandleDataResponse(_categoryService);
+            var response = await _categoryService.GetAllCategoriesAsyncWithProductsAsync(query);
+            return ApiResponse(true, response, "All categories fetched successfully");
         }
+
         [HttpPost]
-        public IActionResult addCategory([FromBody] AddCategory addCategory)
+        public async Task<IActionResult> AddCategory([FromBody] AddCategory categoryDto)
         {
-            var category = _categoryService.AddCategoryAsync(addCategory);
-            return HandleDataResponse(_categoryService);
+            var response = await _categoryService.AddCategoryAsync(categoryDto);
+            return ApiResponse(true,response,"Added category successfully");
         }
     }
 }

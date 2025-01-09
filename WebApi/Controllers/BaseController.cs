@@ -7,14 +7,15 @@ namespace WebApi.Controllers
     [ApiController]
     public class BaseController : ControllerBase
     {
-        protected IActionResult HandleDataResponse<T>(T data)
+        protected IActionResult ApiResponse<T>(bool success, T data = default, string message = "")
         {
-            if (data == null)
-            {
-                return NotFound(new { Message = "Resource not found" });
-            }
+            var response = new ApiResponse<T>(success, message, data);
 
-           return Ok( new ApiResponse<T>(true, "", data));
+            return success ? Ok(response) : BadRequest(response);
+        }
+        protected IActionResult ApiNotFound(string message = "Resource not found")
+        {
+            return NotFound(new ApiResponse<string>(false, message, null));
         }
     }
 }

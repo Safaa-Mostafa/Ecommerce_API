@@ -38,9 +38,9 @@ namespace WebApi.Middlewares
                 case ArgumentException _:
                     code = HttpStatusCode.BadRequest;
                     break;
-                case NotFoundException _:
+                case ProductNotFoundException _:
                     code = HttpStatusCode.NotFound;
-                    response = ApiResponse<string>.ErrorResponse(new List<string> { "The requested resource was not found." });
+                    response = new ApiResponse<string>(false, response.Message, null);
                     break;
                 case InvalidOperationException _:
                     code = HttpStatusCode.BadRequest;

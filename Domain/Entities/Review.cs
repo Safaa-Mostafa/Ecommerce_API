@@ -17,7 +17,6 @@ namespace Domain.Entities
             ValidationComment(comment);
             ValidationRating(rating);
             ValidationCustomer(customerId);
-            ValidateId(Id);
             ReviewDate = DateTime.Now;
             ProductId = productId;
             CustomerId = customerId;
