@@ -29,6 +29,7 @@ namespace Persistance
 
             services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
             services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
+            services.AddScoped<IUnitOfWork,UnitOfWork>();
 
         }
     }

@@ -1,42 +1,39 @@
 ﻿using Application.DTOs.Category;
-using Application.Modules.Categories.Commands;
+using Application.Interfaces;
 using Application.Modules.Categories.Queries;
 using AutoMapper;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : ControllerBase
+    public class CategoryController : BaseController
     {
-        private readonly IMediator _mediator;
+        private readonly ICategoryService _categoryService;
         private readonly IMapper _mapper;
 
-        public CategoryController(IMediator mediator, IMapper mapper)
+        public CategoryController(IMapper mapper, ICategoryService categoryService)
         {
-            _mediator = mediator;
+            _categoryService = categoryService;
             _mapper = mapper;
         }
         [HttpGet]
         public IActionResult GetAll(GetAllCategoriesQuery query)
         {
-            var categories = _mediator.Send(query);
-            return Ok(categories);
+            var categories = _categoryService.GetAllCategoriesAsync(query);
+            return HandleDataResponse(categories);
         }
         [HttpGet("with-products")]
         public IActionResult GetALLCategoriesWithProducts(GetAllCategoriesWithProducts query)
         {
-            var categories = _mediator.Send(query);
-            return Ok(categories);
+            return HandleDataResponse(_categoryService);
         }
         [HttpPost]
         public IActionResult addCategory([FromBody] AddCategory addCategory)
         {
-            var createProductCommand = _mapper.Map<CreateCategoryCommand>(addCategory);
-            var categoryId = _mediator.Send(createProductCommand);
-            return Ok(categoryId);
+            var category = _categoryService.AddCategoryAsync(addCategory);
+            return HandleDataResponse(_categoryService);
         }
     }
 }

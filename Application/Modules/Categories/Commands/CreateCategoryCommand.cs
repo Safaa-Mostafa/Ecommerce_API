@@ -15,14 +15,12 @@ namespace Application.Modules.Categories.Commands
     {
         private readonly IGenericRepository<Category> _categoryRepository;
         private readonly IMapper _mapper;
-        private readonly Category _category;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CreateProductCommandHandler(IGenericRepository<Category> categoryRepository, IMapper mapper, Category category, IUnitOfWork unitOfWork)
+        public CreateProductCommandHandler(IGenericRepository<Category> categoryRepository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _category = category;
             _unitOfWork = unitOfWork;
         }
 

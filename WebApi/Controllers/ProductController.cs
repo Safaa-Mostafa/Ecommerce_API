@@ -9,7 +9,7 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
@@ -19,20 +19,20 @@ namespace WebApi.Controllers
             _mediator = mediator;
             _mapper = mapper;
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] AddProduct addProductDto)
         {
             var command = _mapper.Map<CreateProductCommand>(addProductDto);
             var productId = await _mediator.Send(command);
-            return Ok(productId);
+            return HandleDataResponse(productId);
         }
 
         [HttpGet("{id}")]
         public IActionResult GetProductById([FromRoute] GetProductByIdQuery query)
         {
             var product = _mediator.Send(query);
-            return Ok(product);
+            return HandleDataResponse(product);
         }
     }
 }
