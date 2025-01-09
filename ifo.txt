@@ -1,0 +1,82 @@
+اللي إنتي بتحاولي تعمليه فكرة ممتازة لتنظيم الكود، ودي فعلاً طريقة شائعة في التطبيقات الكبيرة. السيناريو اللي وصفتيه بيستخدم Base Controller عشان يبقى فيه كود مشترك لكل الـ APIs، وفي نفس الوقت يخلي الميدياتور مسؤوليته بس إنه يرجع الـ data. هشرحها خطوة خطوة مع مثال عملي.
+
+الهدف:
+الميدياتور يكون مسؤول عن تنفيذ الطلب (Command/Query) وإرجاع النتيجة فقط (IResponse).
+Base Controller يكون مسؤول عن تحويل النتيجة إلى استجابة API (API Response).
+Controllers العادية ترث من الـ Base Controller وتستخدم هذا المنطق.
+الخطوات مع مثال عملي:
+١. إنشاء Base Controller
+ده كود يمثل الـ Base Controller اللي بياخد IResponse من الميدياتور ويحولها لـ API Response.
+
+csharp
+Copy code
+[ApiController]
+public abstract class BaseController : ControllerBase
+{
+    protected IActionResult HandleResponse<T>(IResponse<T> response)
+    {
+        if (!response.IsSuccess)
+        {
+            return BadRequest(new { response.Errors });
+        }
+
+        return Ok(response.Data);
+    }
+}
+٢. إعداد الميدياتور لإرجاع IResponse
+ده كود بسيط لميدياتور Query أو Command بترجع IResponse.
+
+csharp
+Copy code
+public class GetUserQuery : IRequest<IResponse<UserDto>>
+{
+    public int UserId { get; set; }
+}
+
+public class GetUserQueryHandler : IRequestHandler<GetUserQuery, IResponse<UserDto>>
+{
+    public async Task<IResponse<UserDto>> Handle(GetUserQuery request, CancellationToken cancellationToken)
+    {
+        // هنا منطق البحث عن المستخدم
+        var user = await _userRepository.GetByIdAsync(request.UserId);
+        if (user == null)
+        {
+            return Response.Fail<UserDto>("User not found");
+        }
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name
+        };
+
+        return Response.Success(userDto);
+    }
+}
+٣. Controller عادي يرث من Base Controller
+دلوقتي هنستخدم الـ Base Controller في الكود الخاص بكل Controller.
+
+csharp
+Copy code
+[Route("api/[controller]")]
+public class UsersController : BaseController
+{
+    private readonly IMediator _mediator;
+
+    public UsersController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        var query = new GetUserQuery { UserId = id };
+        var result = await _mediator.Send(query);
+        return HandleResponse(result);
+    }
+}
+الشرح:
+Base Controller عنده منطق مشترك لتحويل IResponse إلى IActionResult.
+Controllers بس بتتعامل مع الميدياتور وترسل النتيجة للـ Base Controller.
+الـ APIs كلها بتستفيد من نفس المنطق المشترك، وبالتالي الكود نظيف ومنظ
