@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] 
     [ApiController]
     public class BaseController : ControllerBase
     {
-        protected IActionResult ApiResponse<T>(bool success, T data = default, string message = "")
+        protected IActionResult Ok<T>(T data = default,string message= "Operation completed successfully.")
         {
-            var response = new ApiResponse<T>(success, message, data);
+            var response = new ApiResponse<T>(true,"Operation completed successfully.", data);
 
-            return success ? Ok(response) : BadRequest(response);
+            return base.Ok(response);
         }
         protected IActionResult ApiNotFound(string message = "Resource not found")
         {
@@ -19,3 +19,5 @@ namespace WebApi.Controllers
         }
     }
 }
+
+

@@ -4,40 +4,35 @@ using Persistance.Data;
 
 namespace Persistance.Repositories
 {
-    public class UnitOfWork : IUnitOfWork,IDisposable
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationDbContext _context;
-        private bool _disposed;
+        private readonly Dictionary<Type, object> _repositories = new();
 
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
         }
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
         public IGenericRepository<T> GetRepository<T>() where T : BaseEntity
         {
-            return new GenericRepository<T>(_context);
+            if (!_repositories.ContainsKey(typeof(T)))
+            {
+                var repositoryInstance = new GenericRepository<T>(_context);
+                _repositories[typeof(T)] = repositoryInstance;
+            }
+
+            return (IGenericRepository<T>)_repositories[typeof(T)];
         }
 
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();
         }
-        protected virtual void Dispose(bool disposing)
+
+        public void Dispose()
         {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _context.Dispose();
-                }
-                _disposed = true;
-            }
+            _context.Dispose();
         }
     }
 }

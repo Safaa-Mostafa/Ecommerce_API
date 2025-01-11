@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Application.Exceptions;
 using Application.Wrappers;
+using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -9,8 +10,8 @@ namespace WebApi.Middlewares
     public class ExceptionHandling
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
-        public ExceptionHandling(RequestDelegate next, ILogger logger)
+        private readonly ILogger<ExceptionHandling> _logger;
+        public ExceptionHandling(RequestDelegate next, ILogger<ExceptionHandling> logger)
         {
             _next = next;
             _logger = logger;
@@ -35,12 +36,15 @@ namespace WebApi.Middlewares
                 case UnauthorizedAccessException _:
                     code = HttpStatusCode.Unauthorized;
                     break;
-                case ArgumentException _:
+                case ProductException _:
                     code = HttpStatusCode.BadRequest;
+                    response = new ApiResponse<string>(false, "", response.Message, response.Errors);
                     break;
-                case ProductNotFoundException _:
+                case ProductNotFoundException:
+                case CategoryListotFoundException:
+                case ProductListNotFoundException:
                     code = HttpStatusCode.NotFound;
-                    response = new ApiResponse<string>(false, response.Message, null);
+                    response = new ApiResponse<string>(false,"", response.Message,response.Errors);
                     break;
                 case InvalidOperationException _:
                     code = HttpStatusCode.BadRequest;

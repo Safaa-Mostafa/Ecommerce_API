@@ -11,28 +11,18 @@ namespace Application.Modules.Categories.Queries
 
     public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, List<ReadCategory>>
     {
-        private readonly IGenericRepository<Category> _categoryRepo;
         private readonly IMapper _mapper;
-        public GetAllCategoriesQueryHandler(IGenericRepository<Category> categoryRepo, IMapper mapper)
+        private readonly ICategoryService _categoryService;
+
+        public GetAllCategoriesQueryHandler(ICategoryService categoryService, IMapper mapper)
         {
-            _categoryRepo = categoryRepo;
             _mapper = mapper;
-
+            _categoryService = categoryService;
         }
-
         public async Task<List<ReadCategory>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
         {
-
-            var categories = await _categoryRepo.GetAllAsync();
-
-            if (categories == null || !categories.Any())
-            {
-                throw new CategoryListotFoundException("No categories found in the database.");
-            }
-
-            var categoriesDto = _mapper.Map<List<ReadCategory>>(categories);
-
-            return categoriesDto;
+            var categories = await _categoryService.GetAllCategoriesAsync(request);
+            return categories.ToList();
         }
     }
 }

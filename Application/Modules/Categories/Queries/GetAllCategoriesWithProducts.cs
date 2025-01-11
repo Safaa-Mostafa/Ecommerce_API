@@ -12,27 +12,17 @@ namespace Application.Modules.Categories.Queries
 
     public class GetAllCategoriesWithProductsHandler : IRequestHandler<GetAllCategoriesWithProducts, List<ReadCategory>>
     {
-        private readonly IGenericRepository<Category> _categoryRepo;
-        private readonly IMapper _mapper;
+        private readonly ICategoryService _categoryService;
 
-        public GetAllCategoriesWithProductsHandler(
-            IGenericRepository<Category> categoryRepo,
-            IMapper mapper)
+        public GetAllCategoriesWithProductsHandler(ICategoryService categoryService)
         {
-            _categoryRepo = categoryRepo;
-            _mapper = mapper;
+            _categoryService = categoryService;
         }
 
         public async Task<List<ReadCategory>> Handle(GetAllCategoriesWithProducts request, CancellationToken cancellationToken)
         {
-            var spec = new CategorySpecification();
-            var categories = await _categoryRepo.GetAllAsyncWithIncludes(spec);
-            if (categories == null || !categories.Any())
-            {
-                throw new CategoryListotFoundException("No categories found in the database.");
-            }
-            var categoriesDto = _mapper.Map<List<ReadCategory>>(categories);
-            return categoriesDto;
+           var categories =  await _categoryService.GetAllCategoriesAsyncWithProductsAsync(request);
+           return categories.ToList();
         }
     }
 }

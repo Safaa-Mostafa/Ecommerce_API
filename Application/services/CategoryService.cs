@@ -1,33 +1,46 @@
 ﻿using Application.DTOs.Category;
+using Application.Exceptions;
 using Application.Interfaces;
 using Application.Modules.Categories.Commands;
 using Application.Modules.Categories.Queries;
+using Application.Specifications;
 using AutoMapper;
-using MediatR;
+using Domain.Entities;
 
 namespace Application.services
 {
-    public class CategoryService:ICategoryService
+    public class CategoryService : ICategoryService
     {
-        private readonly IMediator _mediator;
         private readonly IMapper _mapper;
-        public CategoryService(IMediator mediator, IMapper mapper)
+        private readonly IGenericRepository<Category> _categoryRepo;
+        private readonly IUnitOfWork _unitOfWork;
+
+        public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _mediator = mediator;
+            _unitOfWork = unitOfWork;
+            _categoryRepo = _unitOfWork.GetRepository<Category>(); // الحصول على الريبو الخاص بـ Product
             _mapper = mapper;
         }
         public async Task<IEnumerable<ReadCategory>> GetAllCategoriesAsync(GetAllCategoriesQuery query)
         {
-            return await _mediator.Send(query);
+            var categories = await _categoryRepo.GetAllAsync();
+            var categoriesDto = _mapper.Map<List<ReadCategory>>(categories);
+            return categoriesDto;
         }
         public async Task<IEnumerable<ReadCategory>> GetAllCategoriesAsyncWithProductsAsync(GetAllCategoriesWithProducts query)
         {
-            return await _mediator.Send(query);
+            var spec = new CategorySpecification();
+            var categories = await _categoryRepo.GetAllAsyncWithIncludes(spec);
+            var categoriesDto = _mapper.Map<List<ReadCategory>>(categories);
+            return categoriesDto;
         }
-        public async Task<string> AddCategoryAsync(AddCategory addCategoryDto)
+
+        public async Task<int> AddCategoryAsync(CreateCategoryCommand addCategoryDto)
         {
-            var createProductCommand = _mapper.Map<CreateCategoryCommand>(addCategoryDto);
-            return await _mediator.Send(createProductCommand);
+            var category = _mapper.Map<Category>(addCategoryDto);
+            var newCategory = _categoryRepo.AddAsync(category);
+            await _unitOfWork.SaveChangesAsync();
+            return newCategory.Id;
         }
     }
 }

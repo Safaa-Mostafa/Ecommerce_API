@@ -7,5 +7,6 @@ namespace Application.Interfaces
     {
         Task<string> CreateProduct(AddProduct addProductDto);
         Task<ReadProduct> GetProductById(GetProductByIdQuery query);
+        Task<List<ReadProduct>> GetAllProductsAsync(GetAllProductQuery query);
     }
 }

@@ -9,9 +9,6 @@
             : base(message)
         {
         }
-        public CategoryListotFoundException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+
     }
 }

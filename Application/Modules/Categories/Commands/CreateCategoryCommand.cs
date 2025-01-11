@@ -1,35 +1,29 @@
-﻿
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using AutoMapper;
-using Domain.Entities;
 using MediatR;
 
 namespace Application.Modules.Categories.Commands
 {
-    public class CreateCategoryCommand : IRequest<string>
+    public class CreateCategoryCommand : IRequest<int>
     {
         public string name { get; set; }
         public string? description { get; set; }
     }
-    public class CreateProductCommandHandler : IRequestHandler<CreateCategoryCommand, string>
+    public class CreateProductCommandHandler : IRequestHandler<CreateCategoryCommand, int>
     {
-        private readonly IGenericRepository<Category> _categoryRepository;
         private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public CreateProductCommandHandler(IGenericRepository<Category> categoryRepository, IMapper mapper, IUnitOfWork unitOfWork)
+        private readonly ICategoryService _categoryService;
+        public CreateProductCommandHandler(IMapper mapper, ICategoryService categoryService)
         {
-            _categoryRepository = categoryRepository;
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _categoryService = categoryService;
         }
 
-        async Task<string> IRequestHandler<CreateCategoryCommand, string>.Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+        async Task<int> IRequestHandler<CreateCategoryCommand, int>.Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
-            var Category = _mapper.Map<Category>(request);
-            await _categoryRepository.AddAsync(Category);
-            await _unitOfWork.SaveChangesAsync();
-            return Category.Id;
+
+            var category = await _categoryService.AddCategoryAsync(request);
+            return category;
         }
     }
 }

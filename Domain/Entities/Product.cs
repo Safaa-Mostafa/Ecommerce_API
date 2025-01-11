@@ -1,8 +1,5 @@
 ﻿using Domain.Entities.common;
-using Domain.Entities.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Domain.Exceptions;
 
 namespace Domain.Entities
 {
@@ -42,35 +39,35 @@ namespace Domain.Entities
         private void Validate()
         {
             if (string.IsNullOrWhiteSpace(Name))
-                throw new ProductValidationException("Product name cannot be null or empty.", "NAME_NULL_OR_EMPTY");
+                throw new ProductException("Product name cannot be null or empty.");
             if (Name.Length < 3 || Name.Length > 100)
-                throw new ProductValidationException("Product name must be between 3 and 100 characters.", "NAME_LENGTH_INVALID");
+                throw new ProductException("Product name must be between 3 and 100 characters.");
             if (string.IsNullOrWhiteSpace(Description))
-                throw new ProductValidationException("Product description cannot be null or empty.", "DESCRIPTION_NULL_OR_EMPTY");
+                throw new ProductException("Product description cannot be null or empty.");
             if (Description.Length > 500)
-                throw new ProductValidationException("Product description cannot exceed 500 characters.", "DESCRIPTION_LENGTH_EXCEEDED");
+                throw new ProductException("Product description cannot exceed 500 characters.");
             if (Price <= 0)
-                throw new ProductValidationException("Price must be greater than zero.", "PRICE_INVALID");
+                throw new ProductException("Price must be greater than zero.");
             if (Price > 1_000_000)
-                throw new ProductValidationException("Price cannot exceed 1,000,000.", "PRICE_TOO_HIGH");
+                throw new ProductException("Price cannot exceed 1,000,000.");
 
             if (StockQuantity < 0)
-                throw new ProductValidationException("Stock quantity cannot be negative.", "STOCK_NEGATIVE");
+                throw new ProductException("Stock quantity cannot be negative.");
             if (StockQuantity > 10_000)
-                throw new ProductValidationException("Stock quantity cannot exceed 10,000.", "STOCK_TOO_HIGH");
+                throw new ProductException("Stock quantity cannot exceed 10,000.");
 
             if (string.IsNullOrWhiteSpace(CategoryId))
-                throw new ProductValidationException("Category ID cannot be null or empty.", "CATEGORY_ID_NULL_OR_EMPTY");
+                throw new ProductException("Category ID cannot be null or empty.");
             if (CategoryId.Length != 36)
-                throw new ProductValidationException("Category ID must be a valid GUID.", "CATEGORY_ID_INVALID");
+                throw new ProductException("Category ID must be a valid GUID.");
         }
 
         public void ReplenishStock(int quantity)
         {
             if (quantity <= 0)
-                throw new ProductValidationException("Replenish quantity must be greater than zero.", "REPLENISH_QUANTITY_INVALID");
+                throw new ProductException("Replenish quantity must be greater than zero.");
             if (StockQuantity + quantity > 10_000)
-                throw new ProductValidationException("Stock quantity cannot exceed 10,000 after replenishment.", "STOCK_TOO_HIGH_AFTER_REPLENISHMENT");
+                throw new ProductException("Stock quantity cannot exceed 10,000 after replenishment.");
 
             StockQuantity += quantity;
         }
@@ -78,9 +75,9 @@ namespace Domain.Entities
         public void ReduceStock(int quantity)
         {
             if (quantity <= 0)
-                throw new ProductValidationException("Quantity to reduce must be greater than zero.", "REDUCE_QUANTITY_INVALID");
+                throw new ProductException("Quantity to reduce must be greater than zero.");
             if (StockQuantity < quantity)
-                throw new ProductValidationException("Not enough stock available.", "STOCK_INSUFFICIENT");
+                throw new ProductException("Not enough stock available.");
             StockQuantity -= quantity;
         }
 

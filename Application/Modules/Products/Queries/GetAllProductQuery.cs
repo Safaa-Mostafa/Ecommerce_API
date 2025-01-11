@@ -1,10 +1,6 @@
 ﻿using Application.DTOs.Product;
-using Application.Exceptions;
 using Application.Interfaces;
-using AutoMapper;
-using Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Modules.Products.Queries
 {
@@ -14,29 +10,17 @@ namespace Application.Modules.Products.Queries
 
         public class GetAllProductQueryHandler : IRequestHandler<GetAllProductQuery, IEnumerable<ReadProduct>>
         {
-            private readonly IGenericRepository<Product> _productRepo;
-            private readonly IMapper _mapper;
+            private readonly IProductService _productService;
 
-            public GetAllProductQueryHandler(
-                IGenericRepository<Product> productRepo,
-                IMapper mapper)
+            public GetAllProductQueryHandler(IProductService productService)
             {
-                _productRepo = productRepo;
-                _mapper = mapper;
+                _productService = productService;
             }
 
             public async Task<IEnumerable<ReadProduct>> Handle(GetAllProductQuery request, CancellationToken cancellationToken)
             {
-                var products = await _productRepo.GetAllAsync();
-
-                if (products == null || !products.Any())
-                {
-                    throw new ProductListNotFoundException("No products found.");
-                }
-
-                var productsDto = _mapper.Map<List<ReadProduct>>(products);
-
-                return productsDto;
+                var products = await _productService.GetAllProductsAsync(request);
+                return products.ToList();
             }
         }
     }
