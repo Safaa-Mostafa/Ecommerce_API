@@ -11,7 +11,7 @@ namespace Domain.Entities
         public int StockQuantity { get; private set; }
         public bool PrdStatus { get; private set; }
 
-        public string CategoryId { get; private set; }
+        public int CategoryId { get; private set; }
         public Category Category { get; private set; }
 
         public virtual ICollection<Image> ImageUrls { get; private set; }
@@ -26,7 +26,7 @@ namespace Domain.Entities
             Reviews = new HashSet<Review>();
         }
 
-        public Product(string description, string name, decimal price, int stock, string categoryId) : this()
+        public Product(string description, string name, decimal price, int stock, int categoryId) : this()
         {
             Validate();
             Description = description;
@@ -56,10 +56,8 @@ namespace Domain.Entities
             if (StockQuantity > 10_000)
                 throw new ProductException("Stock quantity cannot exceed 10,000.");
 
-            if (string.IsNullOrWhiteSpace(CategoryId))
+            if (string.IsNullOrWhiteSpace(CategoryId.ToString()))
                 throw new ProductException("Category ID cannot be null or empty.");
-            if (CategoryId.Length != 36)
-                throw new ProductException("Category ID must be a valid GUID.");
         }
 
         public void ReplenishStock(int quantity)

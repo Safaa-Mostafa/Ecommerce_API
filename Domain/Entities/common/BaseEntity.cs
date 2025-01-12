@@ -8,12 +8,8 @@ namespace Domain.Entities.common
 {
     public class BaseEntity
     {
-        public virtual string Id { get; set; }
+        public virtual int Id { get; set; }
 
-        public BaseEntity()
-        {
-            Id = Guid.NewGuid().ToString();
-        }
      
     }
 }

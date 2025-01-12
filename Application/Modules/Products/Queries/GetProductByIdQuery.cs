@@ -10,7 +10,7 @@ namespace Application.Modules.Products.Queries
 {
     public class GetProductByIdQuery : IRequest<ReadProduct>
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
 
     }
 

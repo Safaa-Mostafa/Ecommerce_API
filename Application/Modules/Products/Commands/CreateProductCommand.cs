@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.Modules.Products.Commands
 {
-    public class CreateProductCommand : IRequest<string>
+    public class CreateProductCommand : IRequest<int>
     {
         public string? Description { get; set; }
         public string Name { get; set; }
@@ -16,25 +16,18 @@ namespace Application.Modules.Products.Commands
         public Discount discount { get; set; }
     }
 
-    public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,string>
+    public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,int>
     {
-        private readonly IGenericRepository<Product> _productRepository;
-        private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public CreateProductCommandHandler(IGenericRepository<Product> productRepository, IMapper mapper, IUnitOfWork unitOfWork)
+        private readonly IProductService _productService;
+        public CreateProductCommandHandler( IMapper mapper, IProductService productService)
         {
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _unitOfWork = unitOfWork;
+            _productService = productService ;
         }
 
-        public async Task<string> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+        public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
-            var product = _mapper.Map<Product>(request);
-            await _productRepository.AddAsync(product);
-            await _unitOfWork.SaveChangesAsync();
-            return product.Id;
+           var result  =await _productService.CreateProduct(request);
+            return result;
         }
     }
 }

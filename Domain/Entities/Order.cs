@@ -6,12 +6,12 @@ namespace Domain.Entities
     {
         public decimal Amount { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public string UserId { get; set; }
+        public int UserId { get; set; }
         public virtual User User { get; set; }
         public decimal DiscountPercentage { get; private set; }
         public string? DiscountCode { get; private set; }
         public ICollection<ProductOrder> OrderProducts { get; set; } = new List<ProductOrder>();
-        public Order(string Id, string userId,string DiscountCode)
+        public Order(int Id, int userId,string DiscountCode)
         {
             ValidateDiscountCode(DiscountCode);
             UserId = userId;

@@ -13,7 +13,7 @@ namespace Application.Specifications
             ApplyPaging(0, 10);
 
         }
-        public ProductSpecification(string categoryId)
+        public ProductSpecification(int categoryId)
         {
             SetCriteria(p => p.Price > 100 && p.CategoryId == categoryId);
         }

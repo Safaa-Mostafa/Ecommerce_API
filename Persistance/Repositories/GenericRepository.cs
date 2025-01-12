@@ -17,7 +17,7 @@ namespace Persistance.Repositories
             await _context.Set<T>().AddAsync(entity);
         }
 
-        public Task DeleteAsync(string id)
+        public Task DeleteAsync(int id)
         {
             throw new NotImplementedException();
         }
@@ -26,7 +26,7 @@ namespace Persistance.Repositories
 
         public async Task<IEnumerable<T>> GetAllAsyncWithIncludes(ISpecification<T> spec)
         {
-           IQueryable<T> query = _context.Set<T>();
+            IQueryable<T> query = _context.Set<T>();
 
             foreach (var include in spec.Includes)
             {
@@ -36,21 +36,21 @@ namespace Persistance.Repositories
             return query.ToList();
         }
 
-        public async  Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(string id)
+        public async Task<T> GetByIdAsync(int id)
         {
             return await _context.Set<T>().FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public Task UpdateAsync(T entity)
+        public  T Update(T entity)
         {
-            throw new NotImplementedException();
+            _context.Set<T>().Update(entity);
+            return entity;
         }
+
     }
-
-
 }

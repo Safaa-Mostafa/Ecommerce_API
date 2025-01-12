@@ -7,12 +7,12 @@ namespace Domain.Entities
         public DateTime ReviewDate { get; private set; }
         public decimal Rating { get; private set; }
         public string Comment { get; private set; }
-        public string ProductId { get; private set; }
+        public int ProductId { get; private set; }
         public Product Product { get; private set; }
-        public string CustomerId { get; private set; }
+        public int CustomerId { get; private set; }
         public User Customer { get; private set; }
 
-        public Review(string comment, decimal rating, string productId, string customerId,string Id)
+        public Review(string comment, decimal rating, int productId, int customerId)
         {
             ValidationComment(comment);
             ValidationRating(rating);
@@ -32,9 +32,9 @@ namespace Domain.Entities
         {
             if (rating < 1 || rating > 5) throw new ArgumentOutOfRangeException(nameof(rating), "Rating must be between 1 and 5.");
         }
-        private void ValidationCustomer(string customerId)
+        private void ValidationCustomer(int customerId)
         {
-            if (string.IsNullOrWhiteSpace(customerId)) throw new ArgumentException("CustomerId cannot be null or empty.");
+            if (string.IsNullOrWhiteSpace(customerId.ToString())) throw new ArgumentException("CustomerId cannot be null or empty.");
         }
 
     }

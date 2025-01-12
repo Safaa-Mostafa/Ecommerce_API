@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.Product;
 using Application.Exceptions;
 using Application.Interfaces;
+using Application.Modules.Products.Commands;
 using Application.Modules.Products.Queries;
 using AutoMapper;
 using Domain.Entities;
@@ -16,16 +17,16 @@ namespace Application.services
         public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _productRepo = _unitOfWork.GetRepository<Product>(); // الحصول على الريبو الخاص بـ Product
+            _productRepo = _unitOfWork.GetRepository<Product>();
             _mapper = mapper;
         }
 
-        public async Task<string> CreateProduct(AddProduct addProductDto)
+        public async Task<int> CreateProduct(CreateProductCommand request)
         {
-            var product = _mapper.Map<Product>(addProductDto);
-            await _productRepo.AddAsync(product);
+            var product = _mapper.Map<Product>(request);
+            var newProduct = _productRepo.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
-            return product.Id;
+            return newProduct.Id;
         }
         public async Task<ReadProduct> GetProductById(GetProductByIdQuery query)
         {
@@ -38,5 +39,16 @@ namespace Application.services
             var products = await _productRepo.GetAllAsync();
             return _mapper.Map<List<ReadProduct>>(products);
         }
+        public async Task<Product> UpdateProduct(UpdateProductCommand request)
+        {
+            var updatedProduct = _mapper.Map<Product>(request);
+            var product = await _productRepo.GetByIdAsync(updatedProduct.Id);
+            if( product is null)throw new ProductNotFoundException($"Product with ID {updatedProduct.Id} not found.");
+            _mapper.Map(updatedProduct, product);
+            _productRepo.Update(product);
+            await _unitOfWork.SaveChangesAsync();
+            return product;
+        }
+
     }
 }
