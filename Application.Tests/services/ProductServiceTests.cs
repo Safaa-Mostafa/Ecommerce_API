@@ -31,20 +31,20 @@ namespace Application.Tests.services
                 Description = "Description",
             };
 
-            //var createProductCommand = new CreateProductCommand
-            //{
-            //    Name = addProductDto.Name,
-            //    Description = addProductDto.Description
-            //};
-            //var expectedProductId = Guid.NewGuid().ToString();
-            //_mapperMock.Setup(m => m.Map<CreateProductCommand>(addProductDto)).Returns(createProductCommand);
-            //_mediatorMock.Setup(m => m.Send(createProductCommand, default)).ReturnsAsync(expectedProductId);
+            var createProductCommand = new CreateProductCommand
+            {
+               Name = addProductDto.Name,
+               Description = addProductDto.Description
+            };
+            var expectedProductId = Guid.NewGuid().ToString();
+            _mapperMock.Setup(m => m.Map<CreateProductCommand>(addProductDto)).Returns(createProductCommand);
+            _mediatorMock.Setup(m => m.Send(createProductCommand, default)).ReturnsAsync(expectedProductId);
 
-            //var result = await _productService.CreateProduct(addProductDto);
+            var result = await _productService.CreateProduct(addProductDto);
 
-            //Assert.Equal(expectedProductId, result);
-            //_mapperMock.Verify(m => m.Map<CreateProductCommand>(addProductDto), Times.Once);
-            //_mediatorMock.Verify(m => m.Send(createProductCommand, default), Times.Once);
+            Assert.Equal(expectedProductId, result);
+            _mapperMock.Verify(m => m.Map<CreateProductCommand>(addProductDto), Times.Once);
+            _mediatorMock.Verify(m => m.Send(createProductCommand, default), Times.Once);
 
 
         }
