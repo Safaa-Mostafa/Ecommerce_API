@@ -21,7 +21,6 @@ namespace Application.Tests.Controllers
         [Fact]
         public async Task CreateProduct_ReturnsOkResult_WithExpectedResponse()
         {
-            // Arrange
             var addProduct = new AddProduct { Name = "Test Product", Price = 100.0M, StockQuantity = 10, CategoryId ="1"};
             
 
@@ -30,10 +29,8 @@ namespace Application.Tests.Controllers
                 .Setup(m => m.Send(It.IsAny<AddProduct>(), default))
                 .ReturnsAsync(expectedResponse);
 
-            // Act
             var result = await _controller.CreateProduct(addProduct);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal(expectedResponse, okResult.Value);
             _mediatorMock.Verify(m => m.Send(It.IsAny<AddProduct>(), default), Times.Once);
